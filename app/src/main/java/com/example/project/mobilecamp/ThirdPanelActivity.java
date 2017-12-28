@@ -12,10 +12,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-
+import android.widget.EditText;
 
 
 public class ThirdPanelActivity extends AppCompatActivity {
+
+    private EditText searchText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {;
@@ -36,6 +38,8 @@ public class ThirdPanelActivity extends AppCompatActivity {
         final ThirdPanelActivity thirdPanelActivity = this;
 
 
+        searchText = (EditText) findViewById(R.id.search1);
+
         Button buttonGoBack = (Button) findViewById(R.id.button7) ;
         buttonGoBack.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -53,12 +57,19 @@ public class ThirdPanelActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 // setContentView(R.layout.activity_main);
+
                 Intent intent = new Intent(thirdPanelActivity,FourthPanelActivity.class);
+                intent.putExtra("SEARCH_NAME",searchText.getText().toString());
+
                 // setContentView(R.layout.activity_main);
                 startActivity(intent);
 
             }
         });
+
+
+
+
 
     }
 

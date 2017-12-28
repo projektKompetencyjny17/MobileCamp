@@ -10,12 +10,35 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
+import java.io.*;
+import java.sql.SQLException;
 
 public class MainActivity extends AppCompatActivity {
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        //Towrzenie bazy w pamieci telefonu UWAGA wykonuje sie tylko raz, po zmianie bazy nalezy ja wpier usunac z pamieci telefonu
+        DataBaseHelper myDbHelper = new DataBaseHelper(this);
+
+        //myDbHelper.delateDatabase(); //sluzy do usuwania bazy danych z pamieci telefonu
+
+        try {
+
+            myDbHelper.createDataBase();
+
+        } catch (IOException ioe) {
+
+            throw new Error("Unable to create database");
+
+        }
+
+
+
+
         setContentView(R.layout.activity_main); //there was activity_main
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -48,6 +71,10 @@ public class MainActivity extends AppCompatActivity {
                 // setContentView(R.layout.second_panel);
                 startActivity(intent);
                 //setContentView(R.layout.help_panel);
+
+
+
+
             }
         });
    /*

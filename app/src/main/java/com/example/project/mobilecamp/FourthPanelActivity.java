@@ -12,7 +12,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 
+import java.io.IOException;
+import java.sql.SQLException;
+import android.database.Cursor;
 
 
 public class FourthPanelActivity extends AppCompatActivity {
@@ -20,6 +25,22 @@ public class FourthPanelActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {;
         super.onCreate(savedInstanceState);
+
+        DataBaseHelper myDbHelper = new DataBaseHelper(this);
+
+        try {
+
+            myDbHelper.openDataBase();
+
+        }catch(SQLException sqle){
+
+            //throw sqle;
+            System.out.print("blad");
+
+
+        }
+
+
         setContentView(R.layout.fourth_panel); //there was activity_main
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -35,7 +56,20 @@ public class FourthPanelActivity extends AppCompatActivity {
         });*/
         final FourthPanelActivity fourthPanelActivity = this;
 
+        //Pobieranie teskstu z textedit i na jego podstawie wyszukiwanie w bazie
+        String searchText  = getIntent().getStringExtra("SEARCH_NAME");
+        Cursor cr = myDbHelper.getLocalization(searchText);
 
+        //Ustawienie nazwy szukenj pracowni
+        TextView textView3 = (TextView) findViewById(R.id.textview3);
+        String localizationName = cr.getString(3);
+        textView3.setText(localizationName);
+
+        //Ladowanie odpowiedniego obrazka jako mapy
+        ImageView map = (ImageView) findViewById(R.id.map);
+        String pathImg = cr.getString(0);
+        int resID = getResources().getIdentifier(pathImg,"drawable",getPackageName());
+        map.setImageResource(resID);
 
         Button buttonGoBack = (Button) findViewById(R.id.button8) ;
         buttonGoBack.setOnClickListener(new View.OnClickListener() {
