@@ -29,15 +29,24 @@
             android:textSize="25dp"
             />
 
-        <EditText
-            android:id="@+id/search1"
-            android:layout_width="fill_parent"
+        <Spinner
+            android:id="@+id/source_spinner"
+            android:layout_width="300dp"
             android:layout_height="wrap_content"
-            android:minHeight="60dp"
-            android:inputType="text"
-            android:hint="Wpisz symbol"
-            android:layout_marginTop="50dp"
-            android:imeOptions="actionSend" />
+            android:layout_marginTop="40dp"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            />
+
+        <Spinner
+            android:id="@+id/target_spinner"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            />
+
 
         <Button
         android:id="@+id/button6"

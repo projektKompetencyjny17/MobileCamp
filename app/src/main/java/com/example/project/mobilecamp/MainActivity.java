@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
         //Towrzenie bazy w pamieci telefonu UWAGA wykonuje sie tylko raz, po zmianie bazy nalezy ja wpier usunac z pamieci telefonu
         DataBaseHelper myDbHelper = new DataBaseHelper(this);
 
-        //myDbHelper.delateDatabase(); //sluzy do usuwania bazy danych z pamieci telefonu
+        myDbHelper.delateDatabase(); //sluzy do usuwania bazy danych z pamieci telefonu
 
         try {
 

@@ -57,7 +57,7 @@ public class FourthPanelActivity extends AppCompatActivity {
         final FourthPanelActivity fourthPanelActivity = this;
 
         //Pobieranie teskstu z textedit i na jego podstawie wyszukiwanie w bazie
-        String searchText  = getIntent().getStringExtra("SEARCH_NAME");
+        String searchText  = getIntent().getStringExtra("TARGET_NAME");
         Cursor cr = myDbHelper.getLocalization(searchText);
 
         //Ustawienie nazwy szukenj pracowni

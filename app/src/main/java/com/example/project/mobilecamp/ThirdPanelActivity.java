@@ -11,17 +11,44 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.Spinner;
+import android.widget.ArrayAdapter;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
 
 
 public class ThirdPanelActivity extends AppCompatActivity {
 
-    private EditText searchText;
+    //private EditText searchText;
+    private Spinner sourceSpinner;
+    private Spinner targetSpinner;
+
+    private SpinnerActivity sourceActivity;
+    private SpinnerActivity targetActivity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {;
         super.onCreate(savedInstanceState);
+
+        DataBaseHelper myDbHelper = new DataBaseHelper(this);
+
+        try {
+
+            myDbHelper.openDataBase();
+
+        }catch(SQLException sqle){
+
+            //throw sqle;
+            System.out.print("blad");
+
+
+        }
+
+
+
         setContentView(R.layout.third_panel); //there was activity_main
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -38,7 +65,41 @@ public class ThirdPanelActivity extends AppCompatActivity {
         final ThirdPanelActivity thirdPanelActivity = this;
 
 
-        searchText = (EditText) findViewById(R.id.search1);
+        //searchText = (EditText) findViewById(R.id.search1);
+        sourceActivity = new SpinnerActivity();
+        targetActivity = new SpinnerActivity();
+
+
+        ArrayList<String> listSource = myDbHelper.getListOfLocation();
+
+        sourceSpinner = (Spinner) findViewById(R.id.source_spinner);
+        sourceSpinner.setOnItemSelectedListener(sourceActivity);
+
+        // Create an ArrayAdapter using the string array and a default spinner layout
+        //ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,, android.R.layout.simple_spinner_item);
+        ArrayAdapter<String> adapterSource = new ArrayAdapter(this,android.R.layout.simple_dropdown_item_1line,listSource);
+        // Specify the layout to use when the list of choices appears
+        adapterSource.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        sourceSpinner.setAdapter(adapterSource);
+
+
+
+
+        targetSpinner = (Spinner) findViewById(R.id.target_spinner);
+        targetSpinner.setOnItemSelectedListener(targetActivity);
+
+        // Create an ArrayAdapter using the string array and a default spinner layout
+        //ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,, android.R.layout.simple_spinner_item);
+        ArrayAdapter<String> adapterTarget = new ArrayAdapter(this,android.R.layout.simple_dropdown_item_1line,listSource);
+        // Specify the layout to use when the list of choices appears
+        adapterTarget.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        targetSpinner.setAdapter(adapterTarget);
+
+
+
+
 
         Button buttonGoBack = (Button) findViewById(R.id.button7) ;
         buttonGoBack.setOnClickListener(new View.OnClickListener() {
@@ -59,15 +120,14 @@ public class ThirdPanelActivity extends AppCompatActivity {
                 // setContentView(R.layout.activity_main);
 
                 Intent intent = new Intent(thirdPanelActivity,FourthPanelActivity.class);
-                intent.putExtra("SEARCH_NAME",searchText.getText().toString());
+                intent.putExtra("SOURCE_NAME",sourceActivity.getNameLocation());
+                intent.putExtra("TARGET_NAME",targetActivity.getNameLocation());
 
                 // setContentView(R.layout.activity_main);
                 startActivity(intent);
 
             }
         });
-
-
 
 
 

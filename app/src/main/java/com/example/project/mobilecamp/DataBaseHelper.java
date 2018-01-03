@@ -8,6 +8,7 @@ import java.io.IOException;
 import android.database.sqlite.SQLiteException;
 import java.io.*;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 
 /**
@@ -170,6 +171,18 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         res.moveToFirst();
         return res;
 
+    }
+
+    public ArrayList<String> getListOfLocation(){
+        SQLiteDatabase db = this.getWritableDatabase();
+        ArrayList<String> result = new ArrayList<>();
+        Cursor cur = db.rawQuery("SELECT NazwaZPlanu FROM NazwaMiejsca WHERE NazwaZPlanu IS NOT NULL;",null);
+        //res.moveToFirst();
+        while(cur.moveToNext()){
+            result.add(cur.getString(0));
+
+        }
+        return result;
     }
 
 }
