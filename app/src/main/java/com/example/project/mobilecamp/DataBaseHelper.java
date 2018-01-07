@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteException;
 import java.io.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -176,7 +177,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     public ArrayList<String> getListOfLocation(){
         SQLiteDatabase db = this.getWritableDatabase();
         ArrayList<String> result = new ArrayList<>();
-        Cursor cur = db.rawQuery("SELECT NazwaZPlanu FROM NazwaMiejsca WHERE NazwaZPlanu IS NOT NULL;",null);
+        Cursor cur = db.rawQuery("SELECT NazwaZwyczajowa1 FROM NazwaMiejsca WHERE NazwaZwyczajowa1 IS NOT NULL;",null);
         //res.moveToFirst();
         while(cur.moveToNext()){
             result.add(cur.getString(0));
@@ -184,5 +185,42 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         }
         return result;
     }
+
+    public List<LocNode> createInitList(){
+        SQLiteDatabase db = this.getWritableDatabase();
+        ArrayList<LocNode> initList  = new ArrayList<>();
+        Cursor cur = db.rawQuery("SELECT idLokalizacji, NazwaZwyczajowa1 FROM NazwaMiejsca WHERE NazwaZwyczajowa1 IS NOT NULL;",null);
+        //res.moveToFirst();
+        while(cur.moveToNext()){
+            LocNode buff = new LocNode(cur.getInt(0),cur.getString(1));
+            //System.out.println("To jest cur: "+cur.getInt(0));
+            Cursor cur2 = db.rawQuery("SELECT idWezlaWyj, NazwaZwyczajowa1 FROM Polaczenia JOIN NazwaMiejsca ON idWezlaWyj=idLokalizacji WHERE idWezlaWej = " + cur.getInt(0) + ";",null);
+            while(cur2.moveToNext()){
+                buff.addNeighbor(new LocNode(cur2.getInt(0),cur2.getString(1)));
+                //System.out.println("To jest cur2: "+cur2.getInt(0));
+            }
+            initList.add(buff);
+
+        }
+
+
+        return initList;
+
+
+    }
+
+    public LocNode createLocNode(String source){
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cur = db.rawQuery("SELECT idWezlaWyj, NazwaZwyczajowa1 FROM Polaczenia JOIN NazwaMiejsca ON idWezlaWyj=idLokalizacji WHERE idWezlaWej = (SELECT idLokalizacji FROM NazwaMiejsca WHERE NazwaZwyczajowa1 Like '" + source + "');",null);
+        LocNode result = new LocNode(0,source);
+        while(cur.moveToNext()){
+            result.addNeighbor(new LocNode(cur.getInt(0),cur.getString(1)));
+            //System.out.println("To jest cur2: "+cur2.getInt(0));
+        }
+
+        return result;
+    }
+
+
 
 }

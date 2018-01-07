@@ -19,8 +19,35 @@ import java.io.IOException;
 import java.sql.SQLException;
 import android.database.Cursor;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 
 public class FourthPanelActivity extends AppCompatActivity {
+
+    private static boolean searchNode(List<LocNode> init, LocNode source, LocNode dest, List<LocNode> res) {
+//		System.out.println(source.getDescription());
+        if(!dest.isContaining(source)) {
+            source.setVisited(true);
+            for(LocNode ln : source.getNeighbors()) {
+                if(!ln.isVisited()) {
+                    if(searchNode(init, ln, dest, res)) {
+                        res.add(ln);
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        else {
+//			System.out.println("." +dest.getDescription());
+            return true;
+        }
+    }
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {;
@@ -39,6 +66,8 @@ public class FourthPanelActivity extends AppCompatActivity {
 
 
         }
+
+
 
 
         setContentView(R.layout.fourth_panel); //there was activity_main
@@ -71,6 +100,17 @@ public class FourthPanelActivity extends AppCompatActivity {
         int resID = getResources().getIdentifier(pathImg,"drawable",getPackageName());
         map.setImageResource(resID);
 
+
+        ArrayList<LocNode> result = new ArrayList<>();
+        String source  = getIntent().getStringExtra("SOURCE_NAME");
+        searchNode(myDbHelper.createInitList(),myDbHelper.createLocNode(source),myDbHelper.createLocNode(searchText),result);
+
+        Collections.reverse(result);
+
+        for(LocNode s : result){
+            s.getDescription();
+
+        }
         Button buttonGoBack = (Button) findViewById(R.id.button8) ;
         buttonGoBack.setOnClickListener(new View.OnClickListener() {
             @Override
