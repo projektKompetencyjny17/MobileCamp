@@ -193,11 +193,11 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         //res.moveToFirst();
         while(cur.moveToNext()){
             LocNode buff = new LocNode(cur.getInt(0),cur.getString(1));
-            //System.out.println("To jest cur: "+cur.getInt(0));
+            System.out.println("To jest cur: "+cur.getInt(0));
             Cursor cur2 = db.rawQuery("SELECT idWezlaWyj, NazwaZwyczajowa1 FROM Polaczenia JOIN NazwaMiejsca ON idWezlaWyj=idLokalizacji WHERE idWezlaWej = " + cur.getInt(0) + ";",null);
             while(cur2.moveToNext()){
                 buff.addNeighbor(new LocNode(cur2.getInt(0),cur2.getString(1)));
-                //System.out.println("To jest cur2: "+cur2.getInt(0));
+                System.out.println("To jest cur2: "+cur2.getInt(0));
             }
             initList.add(buff);
 
@@ -211,14 +211,47 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     public LocNode createLocNode(String source){
         SQLiteDatabase db = this.getWritableDatabase();
-        Cursor cur = db.rawQuery("SELECT idWezlaWyj, NazwaZwyczajowa1 FROM Polaczenia JOIN NazwaMiejsca ON idWezlaWyj=idLokalizacji WHERE idWezlaWej = (SELECT idLokalizacji FROM NazwaMiejsca WHERE NazwaZwyczajowa1 Like '" + source + "');",null);
-        LocNode result = new LocNode(0,source);
+        Cursor cur = db.rawQuery("SELECT idLokalizacji FROM NazwaMiejsca WHERE NazwaZwyczajowa1 Like '" + source + "';",null);
+        cur.moveToFirst();
+        int idNode = cur.getInt(0);
+        cur = db.rawQuery("SELECT idWezlaWyj, NazwaZwyczajowa1 FROM Polaczenia JOIN NazwaMiejsca ON idWezlaWyj=idLokalizacji WHERE idWezlaWej = " + idNode + ";",null);
+        LocNode result = new LocNode(idNode,source);
         while(cur.moveToNext()){
             result.addNeighbor(new LocNode(cur.getInt(0),cur.getString(1)));
             //System.out.println("To jest cur2: "+cur2.getInt(0));
         }
 
         return result;
+    }
+
+    public ArrayList<Integer> getNeighbor(Integer id){
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cur = db.rawQuery("SELECT idWezlaWyj FROM Polaczenia WHERE idWezlaWej = " + id + ";",null);
+        ArrayList<Integer> result = new ArrayList<>();
+        while(cur.moveToNext()){
+            result.add(cur.getInt(0));
+            //System.out.println("Dla ID = " + id + "wezel  = " + cur.getInt(0));
+
+        }
+
+        return result;
+
+    }
+
+    public String getName(Integer id){
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cur = db.rawQuery("SELECT NazwaZwyczajowa1 FROM  NazwaMiejsca  WHERE idLokalizacji = " + id + ";",null);
+        cur.moveToFirst();
+
+        return cur.getString(0);
+    }
+
+    public Integer getId(String name){
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cur = db.rawQuery("SELECT idLokalizacji FROM  NazwaMiejsca  WHERE NazwaZwyczajowa1 LIKE '" + name + "';",null);
+        cur.moveToFirst();
+
+        return cur.getInt(0);
     }
 
 

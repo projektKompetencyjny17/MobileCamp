@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -21,18 +22,25 @@ import android.database.Cursor;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 
 public class FourthPanelActivity extends AppCompatActivity {
 
-    private static boolean searchNode(List<LocNode> init, LocNode source, LocNode dest, List<LocNode> res) {
+    private static boolean searchNode(List<LocNode> init, LocNode source, LocNode dest, List<LocNode> res, HashSet<Integer> buff) {
 //		System.out.println(source.getDescription());
         if(!dest.isContaining(source)) {
+            System.out.println("=============1");
+            //buff.add(source.getIdNode());
             source.setVisited(true);
+
             for(LocNode ln : source.getNeighbors()) {
                 if(!ln.isVisited()) {
-                    if(searchNode(init, ln, dest, res)) {
+                //if(!buff.contains(ln.getIdNode())) {
+                    System.out.println("=============2");
+                    if(searchNode(init, ln, dest, res, buff)) {
+                        System.out.println("=============3");
                         res.add(ln);
                         return true;
                     }
@@ -44,6 +52,42 @@ public class FourthPanelActivity extends AppCompatActivity {
 //			System.out.println("." +dest.getDescription());
             return true;
         }
+    }
+
+    private static boolean contain(Integer id, ArrayList<Integer> neighbour){
+        for(Integer a : neighbour){
+            if(id.equals(a)){
+                return true;
+            }
+        }
+
+        return false;
+
+    }
+
+    private static boolean searchTwo(Integer idSource, Integer idTarget, HashSet<Integer> buff, ArrayList<String> result, DataBaseHelper myDbHelper){
+
+
+        if(!contain(idTarget,myDbHelper.getNeighbor(idSource))){
+            buff.add(idSource);
+            for(Integer id : myDbHelper.getNeighbor(idSource)){
+                if(!buff.contains(id)){
+                    //System.out.println("==============1");
+                    if(searchTwo(id,idTarget,buff,result,myDbHelper)){
+                        //System.out.println("=================2");
+                        result.add(myDbHelper.getName(id));
+                        return true;
+                    }
+                }
+
+            }
+            return false;
+        }
+        else{
+            return true;
+        }
+
+
     }
 
 
@@ -100,17 +144,28 @@ public class FourthPanelActivity extends AppCompatActivity {
         int resID = getResources().getIdentifier(pathImg,"drawable",getPackageName());
         map.setImageResource(resID);
 
-
-        ArrayList<LocNode> result = new ArrayList<>();
+        HashSet<Integer> buff = new HashSet<>();
+        //ArrayList<LocNode> result = new ArrayList<>();
+        ArrayList<String> result = new ArrayList<>();
         String source  = getIntent().getStringExtra("SOURCE_NAME");
-        searchNode(myDbHelper.createInitList(),myDbHelper.createLocNode(source),myDbHelper.createLocNode(searchText),result);
-
+        //searchNode(myDbHelper.createInitList(),myDbHelper.createLocNode(source),myDbHelper.createLocNode(searchText),result, buff);
+        searchTwo(myDbHelper.getId(source),myDbHelper.getId(searchText),buff,result,myDbHelper);
         Collections.reverse(result);
 
-        for(LocNode s : result){
-            s.getDescription();
+        //System.out.println("TO JEST WIELKOSC LISTY ==========" + result.size());
+
+
+
+        EditText description = (EditText) findViewById(R.id.opis);
+        StringBuilder res = new StringBuilder();
+        for(String s : result){
+            //System.out.println("test :" + s.getDescription());
+            //System.out.println("test==============" + s);
+            res.append(s + "\n");
 
         }
+        description.setText(res);
+
         Button buttonGoBack = (Button) findViewById(R.id.button8) ;
         buttonGoBack.setOnClickListener(new View.OnClickListener() {
             @Override
