@@ -5,6 +5,13 @@ package com.example.project.mobilecamp;
  */
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RectF;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -28,31 +35,6 @@ import java.util.List;
 
 public class FourthPanelActivity extends AppCompatActivity {
 
-    private static boolean searchNode(List<LocNode> init, LocNode source, LocNode dest, List<LocNode> res, HashSet<Integer> buff) {
-//		System.out.println(source.getDescription());
-        if(!dest.isContaining(source)) {
-            System.out.println("=============1");
-            //buff.add(source.getIdNode());
-            source.setVisited(true);
-
-            for(LocNode ln : source.getNeighbors()) {
-                if(!ln.isVisited()) {
-                //if(!buff.contains(ln.getIdNode())) {
-                    System.out.println("=============2");
-                    if(searchNode(init, ln, dest, res, buff)) {
-                        System.out.println("=============3");
-                        res.add(ln);
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-        else {
-//			System.out.println("." +dest.getDescription());
-            return true;
-        }
-    }
 
     private static boolean contain(Integer id, ArrayList<Integer> neighbour){
         for(Integer a : neighbour){
@@ -65,7 +47,7 @@ public class FourthPanelActivity extends AppCompatActivity {
 
     }
 
-    private static boolean searchTwo(Integer idSource, Integer idTarget, HashSet<Integer> buff, ArrayList<String> result, DataBaseHelper myDbHelper){
+    private static boolean searchTwo(Integer idSource, Integer idTarget, HashSet<Integer> buff, ArrayList<Integer> result, DataBaseHelper myDbHelper){
 
 
         if(!contain(idTarget,myDbHelper.getNeighbor(idSource))){
@@ -75,7 +57,8 @@ public class FourthPanelActivity extends AppCompatActivity {
                     //System.out.println("==============1");
                     if(searchTwo(id,idTarget,buff,result,myDbHelper)){
                         //System.out.println("=================2");
-                        result.add(myDbHelper.getName(id));
+                        //result.add(myDbHelper.getName(id));
+                        result.add(id);
                         return true;
                     }
                 }
@@ -134,37 +117,87 @@ public class FourthPanelActivity extends AppCompatActivity {
         Cursor cr = myDbHelper.getLocalization(searchText);
 
         //Ustawienie nazwy szukenj pracowni
-        TextView textView3 = (TextView) findViewById(R.id.textview3);
-        String localizationName = cr.getString(3);
-        textView3.setText(localizationName);
+       // TextView textView3 = (TextView) findViewById(R.id.textview3);
+//        String localizationName = cr.getString(3);
+       // textView3.setText(localizationName);
+
+
+
+
+
+        //wyszukiwanie
+        HashSet<Integer> visitedId = new HashSet<>();
+
+        ArrayList<Integer> result = new ArrayList<>();
+
+        String source  = getIntent().getStringExtra("SOURCE_NAME");
+        searchTwo(myDbHelper.getId(source),myDbHelper.getId(searchText),visitedId,result,myDbHelper);
+        Collections.reverse(result);
+
 
         //Ladowanie odpowiedniego obrazka jako mapy
+
         ImageView map = (ImageView) findViewById(R.id.map);
         String pathImg = cr.getString(0);
         int resID = getResources().getIdentifier(pathImg,"drawable",getPackageName());
-        map.setImageResource(resID);
 
-        HashSet<Integer> buff = new HashSet<>();
-        //ArrayList<LocNode> result = new ArrayList<>();
-        ArrayList<String> result = new ArrayList<>();
-        String source  = getIntent().getStringExtra("SOURCE_NAME");
-        //searchNode(myDbHelper.createInitList(),myDbHelper.createLocNode(source),myDbHelper.createLocNode(searchText),result, buff);
-        searchTwo(myDbHelper.getId(source),myDbHelper.getId(searchText),buff,result,myDbHelper);
-        Collections.reverse(result);
+        //zeby nie skalowalo obrazka
+        BitmapFactory.Options opts = new BitmapFactory.Options();
+        opts.inScaled = false;
 
-        //System.out.println("TO JEST WIELKOSC LISTY ==========" + result.size());
+        //obraz w oryginale
+        Bitmap myMapOrg = BitmapFactory.decodeResource(getResources(),resID,opts);
+
+        //obraz zeskalowany przez android studio
+        Bitmap myMap = BitmapFactory.decodeResource(getResources(),resID);
+
+        // obiekt paint do malowania drogi kolor czerowony grubosc 10
+        Paint myPaint = new Paint();
+        myPaint.setColor(Color.RED);
+        myPaint.setStrokeWidth(10);
+
+        // trzeba wyliczyc skale, zeby potem odpowiednio narysowac pkt w powiekszonym obrazie
+        int scale = myMap.getHeight()/myMapOrg.getHeight();
 
 
+        Bitmap tempBitmap = Bitmap.createBitmap(myMap.getWidth(), myMap.getHeight(), Bitmap.Config.RGB_565);//tworzenie bitmapy do zapisania w image view
+        Canvas tempCanvas = new Canvas(tempBitmap);// canavs do tej mapy
 
-        EditText description = (EditText) findViewById(R.id.opis);
-        StringBuilder res = new StringBuilder();
-        for(String s : result){
-            //System.out.println("test :" + s.getDescription());
-            //System.out.println("test==============" + s);
-            res.append(s + "\n");
+
+        tempCanvas.drawBitmap(myMap, 0, 0, null);// wgranie obrazka na bitmape
+
+
+        //obliczanie pkt do rysowania oraz rysowanie
+        Integer startX = myDbHelper.getCordinates(myDbHelper.getId(source)).get(0)*scale;
+        Integer startY = myDbHelper.getCordinates(myDbHelper.getId(source)).get(1)*scale;
+
+        Integer bufX = 0,bufY = 0;
+
+
+        for(Integer id : result){
+            ArrayList<Integer> buf = myDbHelper.getCordinates(id);
+            bufX = buf.get(0)*scale;
+            bufY = buf.get(1)*scale;
+            tempCanvas.drawLine(startX,startY,bufX,bufY,myPaint);
+            //tempCanvas.drawPoint(buf.get(0),buf.get(1),myPaint);
+            startX = bufX;
+            startY = bufY;
 
         }
-        description.setText(res);
+
+        bufX = myDbHelper.getCordinates(myDbHelper.getId(searchText)).get(0)*scale;
+        bufY = myDbHelper.getCordinates(myDbHelper.getId(searchText)).get(1)*scale;
+
+        tempCanvas.drawLine(startX,startY,bufX,bufY,myPaint);
+
+        // przekazanie bitmapy do wyswietlenia w imageview
+        map.setImageDrawable(new BitmapDrawable(getResources(), tempBitmap));
+
+
+
+
+
+
 
         Button buttonGoBack = (Button) findViewById(R.id.button8) ;
         buttonGoBack.setOnClickListener(new View.OnClickListener() {

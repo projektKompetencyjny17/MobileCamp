@@ -166,9 +166,9 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     // to you to create adapters for your views.
     public Cursor getLocalization(String name){
         SQLiteDatabase db = this.getWritableDatabase();
-        Cursor res = db.rawQuery("SELECT NazwaPliku, LokX, LokY, NazwaZPlanu FROM Lokalizacja JOIN NazwaMiejsca ON Lokalizacja._id=NazwaMiejsca.IdLokalizacji\n" +
-                "GROUP BY NazwaPliku, LokX, LokY, NazwaZPlanu\n" +
-                "HAVING NazwaZPlanu like '" + name + "'",null);
+        Cursor res = db.rawQuery("SELECT NazwaPliku, LokX, LokY, NazwaZwyczajowa1 FROM Lokalizacja JOIN NazwaMiejsca ON Lokalizacja._id=NazwaMiejsca.IdLokalizacji\n" +
+                "GROUP BY NazwaPliku, LokX, LokY, NazwaZwyczajowa1\n" +
+                "HAVING NazwaZwyczajowa1 like '" + name + "'",null);
         res.moveToFirst();
         return res;
 
@@ -186,43 +186,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return result;
     }
 
-    public List<LocNode> createInitList(){
-        SQLiteDatabase db = this.getWritableDatabase();
-        ArrayList<LocNode> initList  = new ArrayList<>();
-        Cursor cur = db.rawQuery("SELECT idLokalizacji, NazwaZwyczajowa1 FROM NazwaMiejsca WHERE NazwaZwyczajowa1 IS NOT NULL;",null);
-        //res.moveToFirst();
-        while(cur.moveToNext()){
-            LocNode buff = new LocNode(cur.getInt(0),cur.getString(1));
-            System.out.println("To jest cur: "+cur.getInt(0));
-            Cursor cur2 = db.rawQuery("SELECT idWezlaWyj, NazwaZwyczajowa1 FROM Polaczenia JOIN NazwaMiejsca ON idWezlaWyj=idLokalizacji WHERE idWezlaWej = " + cur.getInt(0) + ";",null);
-            while(cur2.moveToNext()){
-                buff.addNeighbor(new LocNode(cur2.getInt(0),cur2.getString(1)));
-                System.out.println("To jest cur2: "+cur2.getInt(0));
-            }
-            initList.add(buff);
 
-        }
-
-
-        return initList;
-
-
-    }
-
-    public LocNode createLocNode(String source){
-        SQLiteDatabase db = this.getWritableDatabase();
-        Cursor cur = db.rawQuery("SELECT idLokalizacji FROM NazwaMiejsca WHERE NazwaZwyczajowa1 Like '" + source + "';",null);
-        cur.moveToFirst();
-        int idNode = cur.getInt(0);
-        cur = db.rawQuery("SELECT idWezlaWyj, NazwaZwyczajowa1 FROM Polaczenia JOIN NazwaMiejsca ON idWezlaWyj=idLokalizacji WHERE idWezlaWej = " + idNode + ";",null);
-        LocNode result = new LocNode(idNode,source);
-        while(cur.moveToNext()){
-            result.addNeighbor(new LocNode(cur.getInt(0),cur.getString(1)));
-            //System.out.println("To jest cur2: "+cur2.getInt(0));
-        }
-
-        return result;
-    }
 
     public ArrayList<Integer> getNeighbor(Integer id){
         SQLiteDatabase db = this.getWritableDatabase();
@@ -252,6 +216,21 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         cur.moveToFirst();
 
         return cur.getInt(0);
+    }
+
+    public ArrayList<Integer> getCordinates(Integer id){
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cur = db.rawQuery("SELECT LokX, LokY FROM  Lokalizacja  WHERE _id = " + id + ";",null);
+        cur.moveToFirst();
+
+        ArrayList<Integer> result = new ArrayList<>();
+
+        result.add(cur.getInt(0));
+        result.add(cur.getInt(1));
+
+
+        return result;
+
     }
 
 
