@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
@@ -154,7 +155,8 @@ public class FourthPanelActivity extends AppCompatActivity {
         // obiekt paint do malowania drogi kolor czerowony grubosc 10
         Paint myPaint = new Paint();
         myPaint.setColor(Color.RED);
-        myPaint.setStrokeWidth(10);
+        myPaint.setStrokeWidth(5);
+        myPaint.setPathEffect(new DashPathEffect(new float[] {10,20}, 0));
 
         // trzeba wyliczyc skale, zeby potem odpowiednio narysowac pkt w powiekszonym obrazie
         int scale = myMap.getHeight()/myMapOrg.getHeight();
