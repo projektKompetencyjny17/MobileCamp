@@ -11,7 +11,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
-import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -19,19 +18,18 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
-import android.widget.TextView;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import android.database.Cursor;
+import android.widget.ScrollView;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 
 
 public class FourthPanelActivity extends AppCompatActivity {
@@ -173,6 +171,11 @@ public class FourthPanelActivity extends AppCompatActivity {
         Integer startX = myDbHelper.getCordinates(myDbHelper.getId(source)).get(0)*scale;
         Integer startY = myDbHelper.getCordinates(myDbHelper.getId(source)).get(1)*scale;
 
+
+
+        //buf wpolzednych pocztkoawych, potem sie przyda do wycentorwania
+        final int bufStartX = startX, bufStartY=startY;
+
         Integer bufX = 0,bufY = 0;
 
 
@@ -194,6 +197,17 @@ public class FourthPanelActivity extends AppCompatActivity {
 
         // przekazanie bitmapy do wyswietlenia w imageview
         map.setImageDrawable(new BitmapDrawable(getResources(), tempBitmap));
+
+        //Centrowanie widoku
+        final HorizontalScrollView mainScroll = (HorizontalScrollView) findViewById(R.id.scroll);
+
+        ViewTreeObserver vto = mainScroll.getViewTreeObserver();
+        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            public void onGlobalLayout() {
+                mainScroll.scrollTo(bufStartX, bufStartX);
+            }
+        });
+
 
 
 
