@@ -164,10 +164,10 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     // Add your public helper methods to access and get content from the database.
     // You could return cursors by doing "return myDataBase.query(....)" so it'd be easy
     // to you to create adapters for your views.
-    public Cursor getLocalization(String name){
+    public Cursor getLocalizationData(String name){
         SQLiteDatabase db = this.getWritableDatabase();
-        Cursor res = db.rawQuery("SELECT NazwaPliku, LokX, LokY, NazwaZwyczajowa1 FROM Lokalizacja JOIN NazwaMiejsca ON Lokalizacja._id=NazwaMiejsca.IdLokalizacji\n" +
-                "GROUP BY NazwaPliku, LokX, LokY, NazwaZwyczajowa1\n" +
+        Cursor res = db.rawQuery("SELECT NazwaPliku, NazwaZwyczajowa1 FROM Lokalizacja JOIN NazwaMiejsca ON Lokalizacja._id=NazwaMiejsca.IdLokalizacji\n" +
+                "GROUP BY NazwaPliku, NazwaZwyczajowa1\n" +
                 "HAVING NazwaZwyczajowa1 like '" + name + "'",null);
         res.moveToFirst();
         return res;
@@ -178,7 +178,6 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         ArrayList<String> result = new ArrayList<>();
         Cursor cur = db.rawQuery("SELECT NazwaZwyczajowa1 FROM NazwaMiejsca WHERE NazwaZwyczajowa1 IS NOT NULL;",null);
-        //res.moveToFirst();
         while(cur.moveToNext()){
             result.add(cur.getString(0));
 
@@ -194,7 +193,6 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         ArrayList<Integer> result = new ArrayList<>();
         while(cur.moveToNext()){
             result.add(cur.getInt(0));
-            //System.out.println("Dla ID = " + id + "wezel  = " + cur.getInt(0));
 
         }
 

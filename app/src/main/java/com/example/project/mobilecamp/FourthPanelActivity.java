@@ -13,6 +13,7 @@ import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -25,7 +26,6 @@ import android.widget.ImageView;
 
 import java.sql.SQLException;
 import android.database.Cursor;
-import android.widget.ScrollView;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,15 +46,15 @@ public class FourthPanelActivity extends AppCompatActivity {
 
     }
 
-    private static boolean searchTwo(Integer idSource, Integer idTarget, HashSet<Integer> buff, ArrayList<Integer> result, DataBaseHelper myDbHelper){
+    private boolean searchNode(Integer idSource, Integer idTarget, HashSet<Integer> visitedId, ArrayList<Integer> result, DataBaseHelper myDbHelper){
 
 
         if(!contain(idTarget,myDbHelper.getNeighbor(idSource))){
-            buff.add(idSource);
+            visitedId.add(idSource);
             for(Integer id : myDbHelper.getNeighbor(idSource)){
-                if(!buff.contains(id)){
+                if(!visitedId.contains(id)){
                     //System.out.println("==============1");
-                    if(searchTwo(id,idTarget,buff,result,myDbHelper)){
+                    if(searchNode(id,idTarget, visitedId,result,myDbHelper)){
                         //System.out.println("=================2");
                         //result.add(myDbHelper.getName(id));
                         result.add(id);
@@ -112,13 +112,14 @@ public class FourthPanelActivity extends AppCompatActivity {
         final FourthPanelActivity fourthPanelActivity = this;
 
         //Pobieranie teskstu z textedit i na jego podstawie wyszukiwanie w bazie
-        String searchText  = getIntent().getStringExtra("TARGET_NAME");
-        Cursor cr = myDbHelper.getLocalization(searchText);
+        String targetName  = getIntent().getStringExtra("TARGET_NAME");
+        Cursor cr = myDbHelper.getLocalizationData(targetName);
 
         //Ustawienie nazwy szukenj pracowni
        // TextView textView3 = (TextView) findViewById(R.id.textview3);
 //        String localizationName = cr.getString(3);
        // textView3.setText(localizationName);
+
 
 
 
@@ -130,7 +131,7 @@ public class FourthPanelActivity extends AppCompatActivity {
         ArrayList<Integer> result = new ArrayList<>();
 
         String source  = getIntent().getStringExtra("SOURCE_NAME");
-        searchTwo(myDbHelper.getId(source),myDbHelper.getId(searchText),visitedId,result,myDbHelper);
+        searchNode(myDbHelper.getId(source),myDbHelper.getId(targetName),visitedId,result,myDbHelper);
         Collections.reverse(result);
 
 
@@ -150,14 +151,11 @@ public class FourthPanelActivity extends AppCompatActivity {
         //obraz zeskalowany przez android studio
         Bitmap myMap = BitmapFactory.decodeResource(getResources(),resID);
 
-        // obiekt paint do malowania drogi kolor czerowony grubosc 10
-        Paint myPaint = new Paint();
-        myPaint.setColor(Color.RED);
-        myPaint.setStrokeWidth(5);
-        myPaint.setPathEffect(new DashPathEffect(new float[] {10,20}, 0));
+        // obiekt paint do malowania drogi kolor czerowony grubosc 5
+        Paint myPaint = setLineProperties();
 
         // trzeba wyliczyc skale, zeby potem odpowiednio narysowac pkt w powiekszonym obrazie
-        int scale = myMap.getHeight()/myMapOrg.getHeight();
+        int scale = getScale(myMapOrg, myMap);
 
 
         Bitmap tempBitmap = Bitmap.createBitmap(myMap.getWidth(), myMap.getHeight(), Bitmap.Config.RGB_565);//tworzenie bitmapy do zapisania w image view
@@ -166,47 +164,17 @@ public class FourthPanelActivity extends AppCompatActivity {
 
         tempCanvas.drawBitmap(myMap, 0, 0, null);// wgranie obrazka na bitmape
 
+        //rysowanie pkt
+        drawingPoints(myDbHelper, targetName, result, source, myPaint, scale, tempCanvas);
 
-        //obliczanie pkt do rysowania oraz rysowanie
-        Integer startX = myDbHelper.getCordinates(myDbHelper.getId(source)).get(0)*scale;
-        Integer startY = myDbHelper.getCordinates(myDbHelper.getId(source)).get(1)*scale;
-
-
-
-        //buf wpolzednych pocztkoawych, potem sie przyda do wycentorwania
-        final int bufStartX = startX, bufStartY=startY;
-
-        Integer bufX = 0,bufY = 0;
-
-
-        for(Integer id : result){
-            ArrayList<Integer> buf = myDbHelper.getCordinates(id);
-            bufX = buf.get(0)*scale;
-            bufY = buf.get(1)*scale;
-            tempCanvas.drawLine(startX,startY,bufX,bufY,myPaint);
-            //tempCanvas.drawPoint(buf.get(0),buf.get(1),myPaint);
-            startX = bufX;
-            startY = bufY;
-
-        }
-
-        bufX = myDbHelper.getCordinates(myDbHelper.getId(searchText)).get(0)*scale;
-        bufY = myDbHelper.getCordinates(myDbHelper.getId(searchText)).get(1)*scale;
-
-        tempCanvas.drawLine(startX,startY,bufX,bufY,myPaint);
 
         // przekazanie bitmapy do wyswietlenia w imageview
         map.setImageDrawable(new BitmapDrawable(getResources(), tempBitmap));
 
         //Centrowanie widoku
-        final HorizontalScrollView mainScroll = (HorizontalScrollView) findViewById(R.id.scroll);
-
-        ViewTreeObserver vto = mainScroll.getViewTreeObserver();
-        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            public void onGlobalLayout() {
-                mainScroll.scrollTo(bufStartX, bufStartX);
-            }
-        });
+        Integer bufStartX = myDbHelper.getCordinates(myDbHelper.getId(source)).get(0)*scale;
+        Integer bufStartY = myDbHelper.getCordinates(myDbHelper.getId(source)).get(1)*scale;
+        centeringView(bufStartX, bufStartY);
 
 
 
@@ -227,6 +195,56 @@ public class FourthPanelActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    @NonNull
+    private Paint setLineProperties() {
+        Paint myPaint = new Paint();
+        myPaint.setColor(Color.RED);
+        myPaint.setStrokeWidth(5);
+        myPaint.setPathEffect(new DashPathEffect(new float[] {10,20}, 0));
+        return myPaint;
+    }
+
+    private int getScale(Bitmap myMapOrg, Bitmap myMap) {
+        return myMap.getHeight()/myMapOrg.getHeight();
+    }
+
+    private void drawingPoints(DataBaseHelper myDbHelper, String targetName, ArrayList<Integer> result, String source, Paint myPaint, int scale, Canvas tempCanvas) {
+        //obliczanie pkt do rysowania oraz rysowanie
+        Integer startX = myDbHelper.getCordinates(myDbHelper.getId(source)).get(0)*scale;
+        Integer startY = myDbHelper.getCordinates(myDbHelper.getId(source)).get(1)*scale;
+
+
+        Integer bufX = 0,bufY = 0;
+
+
+        for(Integer id : result){
+            ArrayList<Integer> buf = myDbHelper.getCordinates(id);
+            bufX = buf.get(0)*scale;
+            bufY = buf.get(1)*scale;
+            tempCanvas.drawLine(startX,startY,bufX,bufY,myPaint);
+            //tempCanvas.drawPoint(buf.get(0),buf.get(1),myPaint);
+            startX = bufX;
+            startY = bufY;
+
+        }
+
+        bufX = myDbHelper.getCordinates(myDbHelper.getId(targetName)).get(0)*scale;
+        bufY = myDbHelper.getCordinates(myDbHelper.getId(targetName)).get(1)*scale;
+
+        tempCanvas.drawLine(startX,startY,bufX,bufY,myPaint);
+    }
+
+    private void centeringView(final int bufStartX, final int bufStartY) {
+        final HorizontalScrollView mainScroll = (HorizontalScrollView) findViewById(R.id.scroll);
+
+        ViewTreeObserver vto = mainScroll.getViewTreeObserver();
+        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            public void onGlobalLayout() {
+                mainScroll.scrollTo(bufStartX, bufStartY);
+            }
+        });
     }
 
     @Override

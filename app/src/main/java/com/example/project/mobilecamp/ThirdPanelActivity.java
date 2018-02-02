@@ -22,7 +22,7 @@ import java.util.ArrayList;
 
 public class ThirdPanelActivity extends AppCompatActivity {
 
-    //private EditText searchText;
+    //private EditText targetName;
     private Spinner sourceSpinner;
     private Spinner targetSpinner;
 
@@ -65,7 +65,7 @@ public class ThirdPanelActivity extends AppCompatActivity {
         final ThirdPanelActivity thirdPanelActivity = this;
 
 
-        //searchText = (EditText) findViewById(R.id.search1);
+        //targetName = (EditText) findViewById(R.id.search1);
         sourceActivity = new SpinnerActivity();
         targetActivity = new SpinnerActivity();
 
