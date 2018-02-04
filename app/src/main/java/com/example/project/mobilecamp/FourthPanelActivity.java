@@ -233,6 +233,7 @@ public class FourthPanelActivity extends AppCompatActivity {
         Integer startX = myDbHelper.getCordinates(sourceId).get(0)*scale;
         Integer startY = myDbHelper.getCordinates(sourceId).get(1)*scale;
 
+        //iterator
         int i =0;
         Integer bufX = 0,bufY = 0;
         boolean forWasBroken=false;
