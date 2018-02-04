@@ -35,17 +35,23 @@
             android:id="@+id/scroll"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
+            android:layout_marginLeft="35dp"
+            android:layout_marginTop="25dp"
             <ScrollView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
-                <ImageView
-                    android:id="@+id/map"
+                <RelativeLayout
+                    android:id="@+id/realtiveLayout"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="35dp"
-                    android:layout_marginTop="25dp"
-                    android:src="@drawable/map"
-                    />
+                    android:layout_height="wrap_content">
+                    <ImageView
+                        android:id="@+id/map"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+
+                        android:src="@drawable/map"
+                        />
+                </RelativeLayout>
             </ScrollView>
         </HorizontalScrollView>
 

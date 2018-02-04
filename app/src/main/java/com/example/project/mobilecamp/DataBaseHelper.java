@@ -231,6 +231,15 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     }
 
+    public String getPathOfImg(Integer id){
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cur = db.rawQuery("SELECT NazwaPliku FROM  Lokalizacja  WHERE _id = " + id + ";",null);
+        cur.moveToFirst();
+
+        return cur.getString(0);
+
+    }
+
 
 
 }

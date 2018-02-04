@@ -26,10 +26,12 @@ import android.widget.ImageView;
 
 import java.sql.SQLException;
 import android.database.Cursor;
+import android.widget.RelativeLayout;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 
 
 public class FourthPanelActivity extends AppCompatActivity {
@@ -126,19 +128,55 @@ public class FourthPanelActivity extends AppCompatActivity {
 
 
         //wyszukiwanie
-        HashSet<Integer> visitedId = new HashSet<>();
-
-        ArrayList<Integer> result = new ArrayList<>();
 
         String source  = getIntent().getStringExtra("SOURCE_NAME");
-        searchNode(myDbHelper.getId(source),myDbHelper.getId(targetName),visitedId,result,myDbHelper);
-        Collections.reverse(result);
+        Integer sourceId = myDbHelper.getId(source);
+
+        ArrayList<Integer> result = getResultOfSearch(myDbHelper, targetName, sourceId);
 
 
         //Ladowanie odpowiedniego obrazka jako mapy
 
+
+
+        printingMap(myDbHelper, targetName, result, sourceId);
+
+
+
+
+
+
+
+
+        Button buttonGoBack = (Button) findViewById(R.id.button8) ;
+        buttonGoBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // setContentView(R.layout.activity_main);
+                Intent intent = new Intent(fourthPanelActivity,ThirdPanelActivity.class);
+                // setContentView(R.layout.activity_main);
+                startActivity(intent);
+
+            }
+        });
+
+    }
+
+    @NonNull
+    private ArrayList<Integer> getResultOfSearch(DataBaseHelper myDbHelper, String targetName, Integer sourceId) {
+        HashSet<Integer> visitedId = new HashSet<>();
+
+        ArrayList<Integer> result = new ArrayList<>();
+
+
+        searchNode(sourceId,myDbHelper.getId(targetName),visitedId,result,myDbHelper);
+        Collections.reverse(result);
+        return result;
+    }
+
+    private void printingMap(DataBaseHelper myDbHelper, String targetName, List<Integer> result, Integer sourceId) {
         ImageView map = (ImageView) findViewById(R.id.map);
-        String pathImg = cr.getString(0);
+        String pathImg = myDbHelper.getPathOfImg(sourceId);
         int resID = getResources().getIdentifier(pathImg,"drawable",getPackageName());
 
         //zeby nie skalowalo obrazka
@@ -165,36 +203,16 @@ public class FourthPanelActivity extends AppCompatActivity {
         tempCanvas.drawBitmap(myMap, 0, 0, null);// wgranie obrazka na bitmape
 
         //rysowanie pkt
-        drawingPoints(myDbHelper, targetName, result, source, myPaint, scale, tempCanvas);
+        drawingPoints(myDbHelper, targetName, result, sourceId, myPaint, scale, tempCanvas);
 
 
         // przekazanie bitmapy do wyswietlenia w imageview
         map.setImageDrawable(new BitmapDrawable(getResources(), tempBitmap));
 
         //Centrowanie widoku
-        Integer bufStartX = myDbHelper.getCordinates(myDbHelper.getId(source)).get(0)*scale;
-        Integer bufStartY = myDbHelper.getCordinates(myDbHelper.getId(source)).get(1)*scale;
+        Integer bufStartX = myDbHelper.getCordinates(sourceId).get(0)*scale;
+        Integer bufStartY = myDbHelper.getCordinates(sourceId).get(1)*scale;
         centeringView(bufStartX, bufStartY);
-
-
-
-
-
-
-
-
-        Button buttonGoBack = (Button) findViewById(R.id.button8) ;
-        buttonGoBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // setContentView(R.layout.activity_main);
-                Intent intent = new Intent(fourthPanelActivity,ThirdPanelActivity.class);
-                // setContentView(R.layout.activity_main);
-                startActivity(intent);
-
-            }
-        });
-
     }
 
     @NonNull
@@ -210,16 +228,21 @@ public class FourthPanelActivity extends AppCompatActivity {
         return myMap.getHeight()/myMapOrg.getHeight();
     }
 
-    private void drawingPoints(DataBaseHelper myDbHelper, String targetName, ArrayList<Integer> result, String source, Paint myPaint, int scale, Canvas tempCanvas) {
+    private void drawingPoints(DataBaseHelper myDbHelper, String targetName, List<Integer> result, Integer sourceId, Paint myPaint, int scale, Canvas tempCanvas) {
         //obliczanie pkt do rysowania oraz rysowanie
-        Integer startX = myDbHelper.getCordinates(myDbHelper.getId(source)).get(0)*scale;
-        Integer startY = myDbHelper.getCordinates(myDbHelper.getId(source)).get(1)*scale;
+        Integer startX = myDbHelper.getCordinates(sourceId).get(0)*scale;
+        Integer startY = myDbHelper.getCordinates(sourceId).get(1)*scale;
 
-
+        int i =0;
         Integer bufX = 0,bufY = 0;
-
-
+        boolean forWasBroken=false;
         for(Integer id : result){
+            if(!myDbHelper.getPathOfImg(id).equals(myDbHelper.getPathOfImg(sourceId))){
+                forWasBroken = true;
+                List<Integer> newResult = result.subList(i,result.size()-1);
+                createButton(bufX, bufY, myDbHelper, targetName, newResult, id);
+                break;
+            }
             ArrayList<Integer> buf = myDbHelper.getCordinates(id);
             bufX = buf.get(0)*scale;
             bufY = buf.get(1)*scale;
@@ -227,13 +250,50 @@ public class FourthPanelActivity extends AppCompatActivity {
             //tempCanvas.drawPoint(buf.get(0),buf.get(1),myPaint);
             startX = bufX;
             startY = bufY;
+            //result.remove(i);
+            i++;
+
+
 
         }
 
-        bufX = myDbHelper.getCordinates(myDbHelper.getId(targetName)).get(0)*scale;
-        bufY = myDbHelper.getCordinates(myDbHelper.getId(targetName)).get(1)*scale;
+        if(!forWasBroken) {
+            bufX = myDbHelper.getCordinates(myDbHelper.getId(targetName)).get(0) * scale;
+            bufY = myDbHelper.getCordinates(myDbHelper.getId(targetName)).get(1) * scale;
 
-        tempCanvas.drawLine(startX,startY,bufX,bufY,myPaint);
+            tempCanvas.drawLine(startX, startY, bufX, bufY, myPaint);
+        }
+
+
+    }
+
+    private void createButton(Integer bufX, Integer bufY, final DataBaseHelper myDbHelper, final String targetName, final List<Integer> result, final Integer sourceId) {
+        final RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.realtiveLayout);
+
+        final Button nextLineButton = new Button(this);
+        //nextLineButton.setMaxHeight(10);
+        //nextLineButton.setMaxWidth(10);
+        //int size = 10*scale;
+
+        //int size = 8*scale;
+        //int size2 = size;
+        //dynamicznie cos nei dziala
+        RelativeLayout.LayoutParams parms = new RelativeLayout.LayoutParams(80,80);
+        parms.leftMargin = bufX-40;
+        parms.topMargin = bufY-40;
+
+        nextLineButton.setLayoutParams(parms);
+
+        nextLineButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                printingMap(myDbHelper,targetName,result,sourceId);
+                relativeLayout.removeView(nextLineButton);
+
+            }
+        });
+
+        relativeLayout.addView(nextLineButton);
     }
 
     private void centeringView(final int bufStartX, final int bufStartY) {
