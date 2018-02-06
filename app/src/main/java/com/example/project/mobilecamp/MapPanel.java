@@ -1,7 +1,7 @@
 package com.example.project.mobilecamp;
 
 /**
- * Created by Ola on 2017-12-16.
+ * Created by Ola on 2017-02-06.
  */
 
 import android.content.Intent;
@@ -15,12 +15,13 @@ import android.widget.Button;
 
 
 
-public class SecondPanelClass extends AppCompatActivity {
+public class MapPanel extends AppCompatActivity {
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {;
+    protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.second_panel); //there was activity_main
+        setContentView(R.layout.map_panel); //there was activity_main
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         //Previous there was action for floating button -> use it to learn setting action after click - about 'fab' - it's good example for actions
@@ -33,42 +34,20 @@ public class SecondPanelClass extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });*/
-        final SecondPanelClass secondPanelActivity = this;
-        Button buttonGoBack = (Button) findViewById(R.id.button5) ;
-        buttonGoBack.setOnClickListener(new View.OnClickListener() {
+
+        final MapPanel mapPanelActivity = this;
+        /*
+        Button buttonBack = (Button) findViewById(R.id.button11) ;
+        buttonBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-               // setContentView(R.layout.activity_main);
-                Intent intent = new Intent(secondPanelActivity,MainActivity.class);
+                // setContentView(R.layout.activity_main);
+                Intent intent = new Intent(mapPanelActivity,MainActivity.class);
                 // setContentView(R.layout.activity_main);
                 startActivity(intent);
 
             }
-        });
-
-        Button buttonGoSearching = (Button) findViewById(R.id.button3) ;
-        buttonGoSearching.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // setContentView(R.layout.activity_main);
-                Intent intent = new Intent(secondPanelActivity,ThirdPanelActivity.class);
-                // setContentView(R.layout.activity_main);
-                startActivity(intent);
-
-            }
-        });
-
-        Button buttonMap = (Button) findViewById(R.id.button4) ;
-        buttonMap.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // setContentView(R.layout.activity_main);
-                Intent intent = new Intent(secondPanelActivity,MapPanel.class);
-                // setContentView(R.layout.activity_main);
-                startActivity(intent);
-
-            }
-        });
+        });*/
 
 
     }
@@ -95,4 +74,5 @@ public class SecondPanelClass extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 }
+
 
