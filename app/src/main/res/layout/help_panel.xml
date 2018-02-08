@@ -31,21 +31,60 @@
 
 
         <TextView
-            android:id="@+id/textview4"
+        android:id="@+id/textview4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        android:layout_marginTop="15dp"
+        android:text="Mobile camp to aplikacja mająca ułatwić Tobie łatwą nawigację po wydziale elektrycznym."
+        android:textSize="18dp" />
+
+        <TextView
+            android:id="@+id/textview5"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Opis paneli,buttonow - taki przewodnik użytkownika"
-            android:layout_marginLeft="60dp"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
             android:layout_marginTop="15dp"
-            android:textSize="20dp"
-            />
+            android:text="Przycisk WYSZUKAJ MIEJSCE "
+            android:textSize="18dp" />
 
+        <TextView
+        android:id="@+id/textview6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        android:layout_marginTop="15dp"
+        android:text="Ten przycisk przeniesie Cię do panelu wyszukania.Przedstawione zostaną do wyboru dostępne lokalizacje na WEEIA.Jako efekt wyszukiwań otrzymasz oznaczenia sal,które musisz minąć,aby dotrzeć do celu oraz odpowiednio oznaczoną mapę."
+        android:textSize="14dp" />
+
+        <TextView
+        android:id="@+id/textview7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        android:layout_marginTop="15dp"
+        android:text="Przycisk MAPA KAMPUSU"
+        android:textSize="18dp" />
+
+        <TextView
+            android:id="@+id/textview8"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:layout_marginTop="15dp"
+            android:text="Ten przycisk otworzy przed Tobą mapę kampusu A PŁ.Jest to kampus,na którym znajduje się WEEIA."
+            android:textSize="14dp" />
         <Button
             android:id="@+id/button9"
             android:layout_width="300dp"
             android:layout_height="wrap_content"
             android:text="Powrót"
-            android:layout_marginTop="150dp"
+            android:layout_marginTop="15dp"
             android:layout_marginLeft="30dp"
             android:layout_marginRight="30dp"
             />
