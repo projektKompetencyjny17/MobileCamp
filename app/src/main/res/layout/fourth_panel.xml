@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -32,14 +32,14 @@
             />
 
         <HorizontalScrollView
-            android:id="@+id/scroll"
+            android:id="@+id/horizontalScroll"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
-            android:layout_marginLeft="35dp"
-            android:layout_marginTop="25dp"
-            <ScrollView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            <com.example.project.mobilecamp.MaxHeightScrollView
+                android:id="@+id/verticalScroll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:maxHeight="300dp">
                 <RelativeLayout
                     android:id="@+id/realtiveLayout"
                     android:layout_width="wrap_content"
@@ -52,17 +52,19 @@
                         android:src="@drawable/map"
                         />
                 </RelativeLayout>
-            </ScrollView>
+            </com.example.project.mobilecamp.MaxHeightScrollView>
         </HorizontalScrollView>
 
         <TextView
             android:id="@+id/textview3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Krótkie info - co i gdzie"
+
             android:layout_marginLeft="70dp"
             android:layout_marginTop="10dp"
-            android:textSize="25dp"
+            android:textSize="15dp"
+            android:inputType="textMultiLine"
+            android:singleLine="false"
             />
 
         <Button
@@ -80,8 +82,8 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_main" />
 
 
-</android.support.design.widget.CoordinatorLayout>
+
+</ScrollView>
 

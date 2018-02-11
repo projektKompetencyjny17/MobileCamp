@@ -240,6 +240,18 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     }
 
+    public String getDescription(Integer id){
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cur = db.rawQuery("SELECT NazwaZwyczajowa1 FROM NazwaMiejsca WHERE idLokalizacji =" + id + ";",null);
+
+        if(cur.moveToFirst()){
+            return cur.getString(0);
+        }
+
+        return null;
+
+    }
+
 
 
 }

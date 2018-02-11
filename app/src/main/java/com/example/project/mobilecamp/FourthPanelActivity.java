@@ -27,6 +27,7 @@ import android.widget.ImageView;
 import java.sql.SQLException;
 import android.database.Cursor;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -78,8 +79,10 @@ public class FourthPanelActivity extends AppCompatActivity {
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {;
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
 
         DataBaseHelper myDbHelper = new DataBaseHelper(this);
 
@@ -133,6 +136,8 @@ public class FourthPanelActivity extends AppCompatActivity {
         Integer sourceId = myDbHelper.getId(source);
 
         ArrayList<Integer> result = getResultOfSearch(myDbHelper, targetName, sourceId);
+
+        //System.out.println("=======-----------------=======" + result + "================================");
 
 
         //Ladowanie odpowiedniego obrazka jako mapy
@@ -233,6 +238,7 @@ public class FourthPanelActivity extends AppCompatActivity {
         Integer startX = myDbHelper.getCordinates(sourceId).get(0)*scale;
         Integer startY = myDbHelper.getCordinates(sourceId).get(1)*scale;
 
+
         //iterator
         int i =0;
         Integer bufX = 0,bufY = 0;
@@ -240,7 +246,7 @@ public class FourthPanelActivity extends AppCompatActivity {
         for(Integer id : result){
             if(!myDbHelper.getPathOfImg(id).equals(myDbHelper.getPathOfImg(sourceId))){
                 forWasBroken = true;
-                List<Integer> newResult = result.subList(i,result.size()-1);
+                List<Integer> newResult = result.subList(i,result.size());
                 createButton(bufX, bufY, myDbHelper, targetName, newResult, id);
                 break;
             }
@@ -248,6 +254,8 @@ public class FourthPanelActivity extends AppCompatActivity {
             bufX = buf.get(0)*scale;
             bufY = buf.get(1)*scale;
             tempCanvas.drawLine(startX,startY,bufX,bufY,myPaint);
+            printDescription(myDbHelper, id);
+            //System.out.println(id);
             //tempCanvas.drawPoint(buf.get(0),buf.get(1),myPaint);
             startX = bufX;
             startY = bufY;
@@ -268,8 +276,27 @@ public class FourthPanelActivity extends AppCompatActivity {
 
     }
 
+    private void printDescription(DataBaseHelper myDbHelper, Integer sourceId) {
+        TextView descriptionView = (TextView) findViewById(R.id.textview3);
+
+        for(Integer id : myDbHelper.getNeighbor(sourceId)) {
+            String description = null;
+            if ((description = myDbHelper.getDescription(id)) != null) {
+                //System.out.println("==================" + description + "===============");
+                CharSequence buff = descriptionView.getText();
+                descriptionView.setText(buff + description+"\n");
+
+
+            }
+        }
+    }
+
     private void createButton(Integer bufX, Integer bufY, final DataBaseHelper myDbHelper, final String targetName, final List<Integer> result, final Integer sourceId) {
         final RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.realtiveLayout);
+
+        final TextView descriptionView = (TextView) findViewById(R.id.textview3);
+        CharSequence buff = descriptionView.getText();
+        descriptionView.setText(buff + "Kliknij w przycisk na mapie po dalsza droge");
 
         final Button nextLineButton = new Button(this);
         //nextLineButton.setMaxHeight(10);
@@ -288,8 +315,10 @@ public class FourthPanelActivity extends AppCompatActivity {
         nextLineButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                descriptionView.setText("");
                 printingMap(myDbHelper,targetName,result,sourceId);
                 relativeLayout.removeView(nextLineButton);
+
 
             }
         });
@@ -298,14 +327,25 @@ public class FourthPanelActivity extends AppCompatActivity {
     }
 
     private void centeringView(final int bufStartX, final int bufStartY) {
-        final HorizontalScrollView mainScroll = (HorizontalScrollView) findViewById(R.id.scroll);
+        final HorizontalScrollView horizontalScroll = (HorizontalScrollView) findViewById(R.id.horizontalScroll);
+        final MaxHeightScrollView verticalScroll = (MaxHeightScrollView) findViewById(R.id.verticalScroll);
 
-        ViewTreeObserver vto = mainScroll.getViewTreeObserver();
-        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+        final int constVar = 50;
+
+        ViewTreeObserver firstVto = horizontalScroll.getViewTreeObserver();
+        firstVto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             public void onGlobalLayout() {
-                mainScroll.scrollTo(bufStartX, bufStartY);
+                horizontalScroll.scrollTo(bufStartX-constVar, bufStartY- constVar);
             }
         });
+
+        ViewTreeObserver secondVto = verticalScroll.getViewTreeObserver();
+        secondVto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            public void onGlobalLayout() {
+                verticalScroll.scrollTo(bufStartX- constVar, bufStartY- constVar);
+            }
+        });
+
     }
 
     @Override
@@ -329,6 +369,7 @@ public class FourthPanelActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
 }
 
 
