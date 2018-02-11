@@ -13,6 +13,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
+import com.github.chrisbanes.photoview.PhotoView;
 
 
 public class MapPanel extends AppCompatActivity {
@@ -34,6 +35,8 @@ public class MapPanel extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });*/
+        PhotoView photoView=(PhotoView)findViewById(R.id.photo_view);
+        photoView.setImageResource(R.drawable.mapa);
 
         final MapPanel mapPanelActivity = this;
         /*
