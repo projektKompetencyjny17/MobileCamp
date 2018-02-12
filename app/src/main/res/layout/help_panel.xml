@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -79,6 +79,26 @@
             android:layout_marginTop="15dp"
             android:text="Ten przycisk otworzy przed Tobą mapę kampusu A PŁ.Jest to kampus,na którym znajduje się WEEIA."
             android:textSize="14dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:layout_marginTop="15dp"
+            android:text="Kontakt"
+            android:textSize="18dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:layout_marginTop="15dp"
+            android:text="E-mail: projekt.kompetencyjny17@gmail.com"
+            android:textSize="14dp" />
+
+
         <Button
             android:id="@+id/button9"
             android:layout_width="300dp"
@@ -94,9 +114,8 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_main" />
 
 
-</android.support.design.widget.CoordinatorLayout>
+</ScrollView>
 
 

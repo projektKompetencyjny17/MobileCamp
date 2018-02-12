@@ -56,11 +56,20 @@
         </HorizontalScrollView>
 
         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Miejsca które miniesz po drodze:"
+            android:layout_marginLeft="40dp"
+            android:layout_marginTop="10dp"
+            android:textSize="18dp"
+            />
+
+        <TextView
             android:id="@+id/textview3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
 
-            android:layout_marginLeft="70dp"
+            android:layout_marginLeft="40dp"
             android:layout_marginTop="10dp"
             android:textSize="15dp"
             android:inputType="textMultiLine"

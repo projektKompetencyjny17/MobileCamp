@@ -11,6 +11,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -25,7 +26,7 @@ import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 
 import java.sql.SQLException;
-import android.database.Cursor;
+
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -38,7 +39,7 @@ import java.util.List;
 public class FourthPanelActivity extends AppCompatActivity {
 
 
-    private static boolean contain(Integer id, ArrayList<Integer> neighbour){
+    private boolean contain(Integer id, ArrayList<Integer> neighbour){
         for(Integer a : neighbour){
             if(id.equals(a)){
                 return true;
@@ -52,9 +53,9 @@ public class FourthPanelActivity extends AppCompatActivity {
     private boolean searchNode(Integer idSource, Integer idTarget, HashSet<Integer> visitedId, ArrayList<Integer> result, DataBaseHelper myDbHelper){
 
 
-        if(!contain(idTarget,myDbHelper.getNeighbor(idSource))){
+        if(!contain(idTarget,myDbHelper.getNeighbour(idSource))){
             visitedId.add(idSource);
-            for(Integer id : myDbHelper.getNeighbor(idSource)){
+            for(Integer id : myDbHelper.getNeighbour(idSource)){
                 if(!visitedId.contains(id)){
                     //System.out.println("==============1");
                     if(searchNode(id,idTarget, visitedId,result,myDbHelper)){
@@ -118,7 +119,8 @@ public class FourthPanelActivity extends AppCompatActivity {
 
         //Pobieranie teskstu z textedit i na jego podstawie wyszukiwanie w bazie
         String targetName  = getIntent().getStringExtra("TARGET_NAME");
-        Cursor cr = myDbHelper.getLocalizationData(targetName);
+        Integer targetId = myDbHelper.getId(targetName);
+        //Cursor cr = myDbHelper.getLocalizationData(targetName);
 
         //Ustawienie nazwy szukenj pracowni
        // TextView textView3 = (TextView) findViewById(R.id.textview3);
@@ -134,8 +136,7 @@ public class FourthPanelActivity extends AppCompatActivity {
 
         String source  = getIntent().getStringExtra("SOURCE_NAME");
         Integer sourceId = myDbHelper.getId(source);
-
-        ArrayList<Integer> result = getResultOfSearch(myDbHelper, targetName, sourceId);
+        ArrayList<Integer> result = getResultOfSearch(myDbHelper, targetId, sourceId);
 
         //System.out.println("=======-----------------=======" + result + "================================");
 
@@ -144,7 +145,7 @@ public class FourthPanelActivity extends AppCompatActivity {
 
 
 
-        printingMap(myDbHelper, targetName, result, sourceId);
+        printingMap(myDbHelper, targetId, result, sourceId);
 
 
 
@@ -168,21 +169,22 @@ public class FourthPanelActivity extends AppCompatActivity {
     }
 
     @NonNull
-    private ArrayList<Integer> getResultOfSearch(DataBaseHelper myDbHelper, String targetName, Integer sourceId) {
+    private ArrayList<Integer> getResultOfSearch(DataBaseHelper myDbHelper, Integer targetId, Integer sourceId) {
         HashSet<Integer> visitedId = new HashSet<>();
 
         ArrayList<Integer> result = new ArrayList<>();
 
 
-        searchNode(sourceId,myDbHelper.getId(targetName),visitedId,result,myDbHelper);
+        searchNode(sourceId,targetId,visitedId,result,myDbHelper);
         Collections.reverse(result);
         return result;
     }
 
-    private void printingMap(DataBaseHelper myDbHelper, String targetName, List<Integer> result, Integer sourceId) {
+    private void printingMap(DataBaseHelper myDbHelper, Integer targetId, List<Integer> result, Integer sourceId) {
         ImageView map = (ImageView) findViewById(R.id.map);
         String pathImg = myDbHelper.getPathOfImg(sourceId);
         int resID = getResources().getIdentifier(pathImg,"drawable",getPackageName());
+
 
         //zeby nie skalowalo obrazka
         BitmapFactory.Options opts = new BitmapFactory.Options();
@@ -208,15 +210,15 @@ public class FourthPanelActivity extends AppCompatActivity {
         tempCanvas.drawBitmap(myMap, 0, 0, null);// wgranie obrazka na bitmape
 
         //rysowanie pkt
-        drawingPoints(myDbHelper, targetName, result, sourceId, myPaint, scale, tempCanvas);
+        drawingLine(myDbHelper, targetId, result, sourceId, myPaint, scale, tempCanvas);
 
 
         // przekazanie bitmapy do wyswietlenia w imageview
         map.setImageDrawable(new BitmapDrawable(getResources(), tempBitmap));
 
         //Centrowanie widoku
-        Integer bufStartX = myDbHelper.getCordinates(sourceId).get(0)*scale;
-        Integer bufStartY = myDbHelper.getCordinates(sourceId).get(1)*scale;
+        Integer bufStartX = myDbHelper.getCoordinates(sourceId).get(0)*scale;
+        Integer bufStartY = myDbHelper.getCoordinates(sourceId).get(1)*scale;
         centeringView(bufStartX, bufStartY);
     }
 
@@ -233,10 +235,10 @@ public class FourthPanelActivity extends AppCompatActivity {
         return myMap.getHeight()/myMapOrg.getHeight();
     }
 
-    private void drawingPoints(DataBaseHelper myDbHelper, String targetName, List<Integer> result, Integer sourceId, Paint myPaint, int scale, Canvas tempCanvas) {
+    private void drawingLine(DataBaseHelper myDbHelper, Integer targetId, List<Integer> result, Integer sourceId, Paint myPaint, int scale, Canvas tempCanvas) {
         //obliczanie pkt do rysowania oraz rysowanie
-        Integer startX = myDbHelper.getCordinates(sourceId).get(0)*scale;
-        Integer startY = myDbHelper.getCordinates(sourceId).get(1)*scale;
+        Integer startX = myDbHelper.getCoordinates(sourceId).get(0)*scale;
+        Integer startY = myDbHelper.getCoordinates(sourceId).get(1)*scale;
 
 
         //iterator
@@ -247,10 +249,10 @@ public class FourthPanelActivity extends AppCompatActivity {
             if(!myDbHelper.getPathOfImg(id).equals(myDbHelper.getPathOfImg(sourceId))){
                 forWasBroken = true;
                 List<Integer> newResult = result.subList(i,result.size());
-                createButton(bufX, bufY, myDbHelper, targetName, newResult, id);
+                createButton(bufX, bufY, myDbHelper, targetId, newResult, id);
                 break;
             }
-            ArrayList<Integer> buf = myDbHelper.getCordinates(id);
+            ArrayList<Integer> buf = myDbHelper.getCoordinates(id);
             bufX = buf.get(0)*scale;
             bufY = buf.get(1)*scale;
             tempCanvas.drawLine(startX,startY,bufX,bufY,myPaint);
@@ -267,8 +269,8 @@ public class FourthPanelActivity extends AppCompatActivity {
         }
 
         if(!forWasBroken) {
-            bufX = myDbHelper.getCordinates(myDbHelper.getId(targetName)).get(0) * scale;
-            bufY = myDbHelper.getCordinates(myDbHelper.getId(targetName)).get(1) * scale;
+            bufX = myDbHelper.getCoordinates(targetId).get(0) * scale;
+            bufY = myDbHelper.getCoordinates(targetId).get(1) * scale;
 
             tempCanvas.drawLine(startX, startY, bufX, bufY, myPaint);
         }
@@ -279,9 +281,9 @@ public class FourthPanelActivity extends AppCompatActivity {
     private void printDescription(DataBaseHelper myDbHelper, Integer sourceId) {
         TextView descriptionView = (TextView) findViewById(R.id.textview3);
 
-        for(Integer id : myDbHelper.getNeighbor(sourceId)) {
+        for(Integer id : myDbHelper.getNeighbour(sourceId)) {
             String description = null;
-            if ((description = myDbHelper.getDescription(id)) != null) {
+            if ((description = myDbHelper.getName(id)) != null) {
                 //System.out.println("==================" + description + "===============");
                 CharSequence buff = descriptionView.getText();
                 descriptionView.setText(buff + description+"\n");
@@ -291,14 +293,15 @@ public class FourthPanelActivity extends AppCompatActivity {
         }
     }
 
-    private void createButton(Integer bufX, Integer bufY, final DataBaseHelper myDbHelper, final String targetName, final List<Integer> result, final Integer sourceId) {
+    private void createButton(Integer bufX, Integer bufY, final DataBaseHelper myDbHelper, final Integer targetId, final List<Integer> result, final Integer sourceId) {
         final RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.realtiveLayout);
 
         final TextView descriptionView = (TextView) findViewById(R.id.textview3);
         CharSequence buff = descriptionView.getText();
-        descriptionView.setText(buff + "Kliknij w przycisk na mapie po dalsza droge");
+        descriptionView.setText(buff + "Kliknij w czerwony przycisk na mapie po dalsza droge");
 
         final Button nextLineButton = new Button(this);
+        nextLineButton.getBackground().setColorFilter(0xFFFF0000, PorterDuff.Mode.MULTIPLY);
         //nextLineButton.setMaxHeight(10);
         //nextLineButton.setMaxWidth(10);
         //int size = 10*scale;
@@ -316,7 +319,7 @@ public class FourthPanelActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 descriptionView.setText("");
-                printingMap(myDbHelper,targetName,result,sourceId);
+                printingMap(myDbHelper, targetId,result,sourceId);
                 relativeLayout.removeView(nextLineButton);
 
 

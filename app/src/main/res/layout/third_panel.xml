@@ -23,26 +23,43 @@
             android:id="@+id/textview1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Wprowadź symbol"
+            android:text="Wybierz miejsca"
             android:layout_marginLeft="80dp"
             android:layout_marginTop="10dp"
             android:textSize="25dp"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Skąd:"
+            android:layout_marginLeft="30dp"
+            android:layout_marginTop="10dp"
+            android:textSize="20dp"
             />
 
         <Spinner
             android:id="@+id/source_spinner"
             android:layout_width="300dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
+            android:layout_marginTop="5dp"
             android:layout_marginLeft="30dp"
             android:layout_marginRight="30dp"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Dokąd:"
+            android:layout_marginLeft="30dp"
+            android:layout_marginTop="10dp"
+            android:textSize="20dp"
             />
 
         <Spinner
             android:id="@+id/target_spinner"
             android:layout_width="300dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
+            android:layout_marginTop="5dp"
             android:layout_marginLeft="30dp"
             android:layout_marginRight="30dp"
             />
