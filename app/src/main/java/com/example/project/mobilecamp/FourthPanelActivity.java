@@ -120,12 +120,8 @@ public class FourthPanelActivity extends AppCompatActivity {
         //Pobieranie teskstu z textedit i na jego podstawie wyszukiwanie w bazie
         String targetName  = getIntent().getStringExtra("TARGET_NAME");
         Integer targetId = myDbHelper.getId(targetName);
-        //Cursor cr = myDbHelper.getLocalizationData(targetName);
 
-        //Ustawienie nazwy szukenj pracowni
-       // TextView textView3 = (TextView) findViewById(R.id.textview3);
-//        String localizationName = cr.getString(3);
-       // textView3.setText(localizationName);
+
 
 
 
@@ -241,7 +237,6 @@ public class FourthPanelActivity extends AppCompatActivity {
         Integer startY = myDbHelper.getCoordinates(sourceId).get(1)*scale;
 
 
-        //iterator
         int i =0;
         Integer bufX = 0,bufY = 0;
         boolean forWasBroken=false;
@@ -257,11 +252,10 @@ public class FourthPanelActivity extends AppCompatActivity {
             bufY = buf.get(1)*scale;
             tempCanvas.drawLine(startX,startY,bufX,bufY,myPaint);
             printDescription(myDbHelper, id);
-            //System.out.println(id);
-            //tempCanvas.drawPoint(buf.get(0),buf.get(1),myPaint);
+
             startX = bufX;
             startY = bufY;
-            //result.remove(i);
+
             i++;
 
 
@@ -302,13 +296,7 @@ public class FourthPanelActivity extends AppCompatActivity {
 
         final Button nextLineButton = new Button(this);
         nextLineButton.getBackground().setColorFilter(0xFFFF0000, PorterDuff.Mode.MULTIPLY);
-        //nextLineButton.setMaxHeight(10);
-        //nextLineButton.setMaxWidth(10);
-        //int size = 10*scale;
 
-        //int size = 8*scale;
-        //int size2 = size;
-        //dynamicznie cos nei dziala
         RelativeLayout.LayoutParams parms = new RelativeLayout.LayoutParams(80,80);
         parms.leftMargin = bufX-40;
         parms.topMargin = bufY-40;
