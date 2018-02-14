@@ -11,7 +11,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
-import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -26,7 +25,7 @@ import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 
 import java.sql.SQLException;
-
+import android.database.Cursor;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -39,9 +38,9 @@ import java.util.List;
 public class FourthPanelActivity extends AppCompatActivity {
 
 
-    private boolean contain(Integer id, ArrayList<Integer> neighbour){
-        for(Integer a : neighbour){
-            if(id.equals(a)){
+    private static boolean contain(Integer id, ArrayList<LocNode> neighbour){
+        for(LocNode a : neighbour){
+            if(id.equals(a.id)){
                 return true;
             }
         }
@@ -49,29 +48,66 @@ public class FourthPanelActivity extends AppCompatActivity {
         return false;
 
     }
+    private float countDistance(LocNode ln1, LocNode ln2){
+        float a = ((ln1.lokX - ln2.lokX)*(ln1.lokX - ln2.lokX) + (ln1.lokY - ln2.lokY)*(ln1.lokY - ln2.lokY));
+        //System.out.println("ln1= " + ln1.id + " ln2= " + ln2.id +"       l1x: " + ln1.lokX + " l2x: " + ln2.lokX + " l1y: " + ln1.lokY + " l2y: " + ln2.lokY + "    res = " + a );
+        return (float)Math.sqrt(a);
+    }
+    private boolean searchNode(LocNode source, LocNode target, HashSet<Integer> visited, ArrayList<LocNode> result, DataBaseHelper myDbHelper){
 
-    private boolean searchNode(Integer idSource, Integer idTarget, HashSet<Integer> visitedId, ArrayList<Integer> result, DataBaseHelper myDbHelper){
-
-
-        if(!contain(idTarget,myDbHelper.getNeighbour(idSource))){
-            visitedId.add(idSource);
-            for(Integer id : myDbHelper.getNeighbour(idSource)){
-                if(!visitedId.contains(id)){
-                    //System.out.println("==============1");
-                    if(searchNode(id,idTarget, visitedId,result,myDbHelper)){
-                        //System.out.println("=================2");
-                        //result.add(myDbHelper.getName(id));
-                        result.add(id);
-                        return true;
+        if(!contain(target.id, myDbHelper.getNeighbor(source))){
+            visited.add(source.id);
+            ArrayList<LocNode> neighbors = myDbHelper.getNeighbor(source);
+            System.out.println("Visited: " + visited.toString());
+            String str = "";
+            for(LocNode ln : neighbors){
+                str += ln.id + " ";
+            }
+            //System.out.println("neighbors: " + str);
+            if(neighbors.size() > 1){
+                float bestDist = 10000;
+                LocNode bestNode = neighbors.get(0);
+                for(LocNode node : neighbors){
+                    //System.out.println("====== " + visited.contains(node.id) + "   size: " + myDbHelper.getNeighbor(node).size());
+                    if(!visited.contains(node.id) && myDbHelper.getNeighbor(node).size() > 1) {
+                        if (bestDist > countDistance(node, target)) {
+                            bestDist = countDistance(node, target);
+                            bestNode = node;
+                        }
                     }
+
                 }
+                //System.out.println("**" + bestNode.id + "-> " + str);
+                //System.out.println("bestnode: " + bestNode.id);
+                if(!visited.contains(bestNode.id)) {
+                    //System.out.println("**" + bestNode.id);
+                    result.add(bestNode);
+                    searchNode(bestNode,target, visited,result,myDbHelper);
+                    return true;
+                }
+                searchNode(bestNode,target, visited,result,myDbHelper);
+                return false;
 
             }
-            return false;
+            else if(neighbors.size() == 1){
+                LocNode current = neighbors.get(0);
+                if(!visited.contains(current.id)) {
+                    System.out.println("*" + neighbors.get(0).id);
+                    result.add(current);
+                    searchNode(current, target, visited, result, myDbHelper);
+
+                    return true;
+                }
+                return false;
+            }
+            else
+                return false;
+
         }
         else{
             return true;
         }
+
 
 
     }
@@ -119,9 +155,12 @@ public class FourthPanelActivity extends AppCompatActivity {
 
         //Pobieranie teskstu z textedit i na jego podstawie wyszukiwanie w bazie
         String targetName  = getIntent().getStringExtra("TARGET_NAME");
-        Integer targetId = myDbHelper.getId(targetName);
+        Cursor cr = myDbHelper.getLocalizationData(targetName);
 
-
+        //Ustawienie nazwy szukenj pracowni
+       // TextView textView3 = (TextView) findViewById(R.id.textview3);
+//        String localizationName = cr.getString(3);
+       // textView3.setText(localizationName);
 
 
 
@@ -131,17 +170,19 @@ public class FourthPanelActivity extends AppCompatActivity {
         //wyszukiwanie
 
         String source  = getIntent().getStringExtra("SOURCE_NAME");
-        Integer sourceId = myDbHelper.getId(source);
-        ArrayList<Integer> result = getResultOfSearch(myDbHelper, targetId, sourceId);
+        LocNode sourceId = myDbHelper.getLocnode(source);
+
+        ArrayList<LocNode> result = getResultOfSearch(myDbHelper, targetName, sourceId);
 
         //System.out.println("=======-----------------=======" + result + "================================");
 
 
         //Ladowanie odpowiedniego obrazka jako mapy
+        ArrayList<Integer> resultInt = new ArrayList<>();
+        for(LocNode ln : result)
+            resultInt.add(ln.id);
 
-
-
-        printingMap(myDbHelper, targetId, result, sourceId);
+        printingMap(myDbHelper, targetName, resultInt, sourceId.id);
 
 
 
@@ -165,22 +206,25 @@ public class FourthPanelActivity extends AppCompatActivity {
     }
 
     @NonNull
-    private ArrayList<Integer> getResultOfSearch(DataBaseHelper myDbHelper, Integer targetId, Integer sourceId) {
+    private ArrayList<LocNode> getResultOfSearch(DataBaseHelper myDbHelper, String targetName, LocNode sourceId) {
         HashSet<Integer> visitedId = new HashSet<>();
 
-        ArrayList<Integer> result = new ArrayList<>();
+        ArrayList<LocNode> result = new ArrayList<>();
 
 
-        searchNode(sourceId,targetId,visitedId,result,myDbHelper);
-        Collections.reverse(result);
+        searchNode(sourceId,myDbHelper.getLocnode(targetName),visitedId,result,myDbHelper);
+        //Collections.reverse(result);
+        String str = "";
+        for(LocNode ln : result)
+            str += ln.id + " ";
+        //System.out.println("sting: " + str);
         return result;
     }
 
-    private void printingMap(DataBaseHelper myDbHelper, Integer targetId, List<Integer> result, Integer sourceId) {
+    private void printingMap(DataBaseHelper myDbHelper, String targetName, List<Integer> result, Integer sourceId) {
         ImageView map = (ImageView) findViewById(R.id.map);
         String pathImg = myDbHelper.getPathOfImg(sourceId);
         int resID = getResources().getIdentifier(pathImg,"drawable",getPackageName());
-
 
         //zeby nie skalowalo obrazka
         BitmapFactory.Options opts = new BitmapFactory.Options();
@@ -206,15 +250,15 @@ public class FourthPanelActivity extends AppCompatActivity {
         tempCanvas.drawBitmap(myMap, 0, 0, null);// wgranie obrazka na bitmape
 
         //rysowanie pkt
-        drawingLine(myDbHelper, targetId, result, sourceId, myPaint, scale, tempCanvas);
+        drawingPoints(myDbHelper, targetName, result, sourceId, myPaint, scale, tempCanvas);
 
 
         // przekazanie bitmapy do wyswietlenia w imageview
         map.setImageDrawable(new BitmapDrawable(getResources(), tempBitmap));
 
         //Centrowanie widoku
-        Integer bufStartX = myDbHelper.getCoordinates(sourceId).get(0)*scale;
-        Integer bufStartY = myDbHelper.getCoordinates(sourceId).get(1)*scale;
+        Integer bufStartX = myDbHelper.getCordinates(sourceId).get(0)*scale;
+        Integer bufStartY = myDbHelper.getCordinates(sourceId).get(1)*scale;
         centeringView(bufStartX, bufStartY);
     }
 
@@ -231,12 +275,13 @@ public class FourthPanelActivity extends AppCompatActivity {
         return myMap.getHeight()/myMapOrg.getHeight();
     }
 
-    private void drawingLine(DataBaseHelper myDbHelper, Integer targetId, List<Integer> result, Integer sourceId, Paint myPaint, int scale, Canvas tempCanvas) {
+    private void drawingPoints(DataBaseHelper myDbHelper, String targetName, List<Integer> result, Integer sourceId, Paint myPaint, int scale, Canvas tempCanvas) {
         //obliczanie pkt do rysowania oraz rysowanie
-        Integer startX = myDbHelper.getCoordinates(sourceId).get(0)*scale;
-        Integer startY = myDbHelper.getCoordinates(sourceId).get(1)*scale;
+        Integer startX = myDbHelper.getCordinates(sourceId).get(0)*scale;
+        Integer startY = myDbHelper.getCordinates(sourceId).get(1)*scale;
 
 
+        //iterator
         int i =0;
         Integer bufX = 0,bufY = 0;
         boolean forWasBroken=false;
@@ -244,18 +289,19 @@ public class FourthPanelActivity extends AppCompatActivity {
             if(!myDbHelper.getPathOfImg(id).equals(myDbHelper.getPathOfImg(sourceId))){
                 forWasBroken = true;
                 List<Integer> newResult = result.subList(i,result.size());
-                createButton(bufX, bufY, myDbHelper, targetId, newResult, id);
+                createButton(bufX, bufY, myDbHelper, targetName, newResult, id);
                 break;
             }
-            ArrayList<Integer> buf = myDbHelper.getCoordinates(id);
+            ArrayList<Integer> buf = myDbHelper.getCordinates(id);
             bufX = buf.get(0)*scale;
             bufY = buf.get(1)*scale;
             tempCanvas.drawLine(startX,startY,bufX,bufY,myPaint);
             printDescription(myDbHelper, id);
-
+            //System.out.println(id);
+            //tempCanvas.drawPoint(buf.get(0),buf.get(1),myPaint);
             startX = bufX;
             startY = bufY;
-
+            //result.remove(i);
             i++;
 
 
@@ -263,8 +309,8 @@ public class FourthPanelActivity extends AppCompatActivity {
         }
 
         if(!forWasBroken) {
-            bufX = myDbHelper.getCoordinates(targetId).get(0) * scale;
-            bufY = myDbHelper.getCoordinates(targetId).get(1) * scale;
+            bufX = myDbHelper.getCordinates(myDbHelper.getId(targetName)).get(0) * scale;
+            bufY = myDbHelper.getCordinates(myDbHelper.getId(targetName)).get(1) * scale;
 
             tempCanvas.drawLine(startX, startY, bufX, bufY, myPaint);
         }
@@ -275,9 +321,9 @@ public class FourthPanelActivity extends AppCompatActivity {
     private void printDescription(DataBaseHelper myDbHelper, Integer sourceId) {
         TextView descriptionView = (TextView) findViewById(R.id.textview3);
 
-        for(Integer id : myDbHelper.getNeighbour(sourceId)) {
+        for(Integer id : myDbHelper.getNeighbor(sourceId)) {
             String description = null;
-            if ((description = myDbHelper.getName(id)) != null) {
+            if ((description = myDbHelper.getDescription(id)) != null) {
                 //System.out.println("==================" + description + "===============");
                 CharSequence buff = descriptionView.getText();
                 descriptionView.setText(buff + description+"\n");
@@ -287,16 +333,21 @@ public class FourthPanelActivity extends AppCompatActivity {
         }
     }
 
-    private void createButton(Integer bufX, Integer bufY, final DataBaseHelper myDbHelper, final Integer targetId, final List<Integer> result, final Integer sourceId) {
+    private void createButton(Integer bufX, Integer bufY, final DataBaseHelper myDbHelper, final String targetName, final List<Integer> result, final Integer sourceId) {
         final RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.realtiveLayout);
 
         final TextView descriptionView = (TextView) findViewById(R.id.textview3);
         CharSequence buff = descriptionView.getText();
-        descriptionView.setText(buff + "Kliknij w czerwony przycisk na mapie po dalsza droge");
+        descriptionView.setText(buff + "Kliknij w przycisk na mapie po dalsza droge");
 
         final Button nextLineButton = new Button(this);
-        nextLineButton.getBackground().setColorFilter(0xFFFF0000, PorterDuff.Mode.MULTIPLY);
+        //nextLineButton.setMaxHeight(10);
+        //nextLineButton.setMaxWidth(10);
+        //int size = 10*scale;
 
+        //int size = 8*scale;
+        //int size2 = size;
+        //dynamicznie cos nei dziala
         RelativeLayout.LayoutParams parms = new RelativeLayout.LayoutParams(80,80);
         parms.leftMargin = bufX-40;
         parms.topMargin = bufY-40;
@@ -307,7 +358,7 @@ public class FourthPanelActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 descriptionView.setText("");
-                printingMap(myDbHelper, targetId,result,sourceId);
+                printingMap(myDbHelper,targetName,result,sourceId);
                 relativeLayout.removeView(nextLineButton);
 
 

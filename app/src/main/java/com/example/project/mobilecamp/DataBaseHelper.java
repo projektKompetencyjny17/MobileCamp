@@ -9,8 +9,6 @@ import android.database.sqlite.SQLiteException;
 import java.io.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 
@@ -166,6 +164,15 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     // Add your public helper methods to access and get content from the database.
     // You could return cursors by doing "return myDataBase.query(....)" so it'd be easy
     // to you to create adapters for your views.
+    public Cursor getLocalizationData(String name){
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor res = db.rawQuery("SELECT NazwaPliku, NazwaZwyczajowa1 FROM Lokalizacja JOIN NazwaMiejsca ON Lokalizacja._id=NazwaMiejsca.IdLokalizacji\n" +
+                "GROUP BY NazwaPliku, NazwaZwyczajowa1\n" +
+                "HAVING NazwaZwyczajowa1 like '" + name + "'",null);
+        res.moveToFirst();
+        return res;
+
+    }
 
     public ArrayList<String> getListOfLocation(){
         SQLiteDatabase db = this.getWritableDatabase();
@@ -175,13 +182,12 @@ public class DataBaseHelper extends SQLiteOpenHelper {
             result.add(cur.getString(0));
 
         }
-        Collections.sort(result);
         return result;
     }
 
 
 
-    public ArrayList<Integer> getNeighbour(Integer id){
+    public ArrayList<Integer> getNeighbor(Integer id){
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cur = db.rawQuery("SELECT idWezlaWyj FROM Polaczenia WHERE idWezlaWej = " + id + ";",null);
         ArrayList<Integer> result = new ArrayList<>();
@@ -194,16 +200,24 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     }
 
+    public ArrayList<LocNode> getNeighbor(LocNode node){
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cur = db.rawQuery("SELECT idWezlaWyj, lo.LokX, lo.LokY FROM Polaczenia po JOIN Lokalizacja lo ON po.idWezlaWyj = lo._id WHERE idWezlaWej = " + node.id + ";",null);
+        ArrayList<LocNode> result = new ArrayList<>();
+        while(cur.moveToNext()){
+            result.add(new LocNode(cur.getInt(0),cur.getFloat(1),cur.getFloat(2)));
+
+        }
+
+        return result;
+
+    }
     public String getName(Integer id){
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cur = db.rawQuery("SELECT NazwaZwyczajowa1 FROM  NazwaMiejsca  WHERE idLokalizacji = " + id + ";",null);
         cur.moveToFirst();
 
-        if(cur.moveToFirst()){
-            return cur.getString(0);
-        }
-
-        return null;
+        return cur.getString(0);
     }
 
     public Integer getId(String name){
@@ -213,8 +227,14 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
         return cur.getInt(0);
     }
+    public LocNode getLocnode(String name){
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cur = db.rawQuery("SELECT idLokalizacji, lo.LokX, lo.LokY FROM  NazwaMiejsca na JOIN Lokalizacja lo ON na.IdLokalizacji = lo._id  WHERE NazwaZwyczajowa1 LIKE '" + name + "';",null);
+        cur.moveToFirst();
 
-    public ArrayList<Integer> getCoordinates(Integer id){
+        return new LocNode(cur.getInt(0),cur.getFloat(1),cur.getFloat(2));
+    }
+    public ArrayList<Integer> getCordinates(Integer id){
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cur = db.rawQuery("SELECT LokX, LokY FROM  Lokalizacja  WHERE _id = " + id + ";",null);
         cur.moveToFirst();
@@ -238,6 +258,17 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     }
 
+    public String getDescription(Integer id){
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cur = db.rawQuery("SELECT NazwaZwyczajowa1 FROM NazwaMiejsca WHERE idLokalizacji =" + id + ";",null);
+
+        if(cur.moveToFirst()){
+            return cur.getString(0);
+        }
+
+        return null;
+
+    }
 
 
 
